@@ -1,0 +1,4 @@
+interface com.github.rgeorgiev583.ducd
+
+method GetSpaceUsage(path: string) -> (size: int)
+method InvalidateCache() -> ()

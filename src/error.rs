@@ -5,6 +5,7 @@ pub enum Error {
     IoError(std::io::Error),
     WalkdirError(walkdir::Error),
     HotwatchError(hotwatch::Error),
+    VarlinkError(varlink::Error),
     DucdError(String),
 }
 
@@ -16,6 +17,7 @@ impl Display for Error {
             Error::IoError(err) => write!(f, "{}", err),
             Error::WalkdirError(err) => write!(f, "{}", err),
             Error::HotwatchError(err) => write!(f, "{}", err),
+            Error::VarlinkError(err) => write!(f, "{}", err),
             Error::DucdError(err) => write!(f, "{}", err),
         }
     }
@@ -36,6 +38,12 @@ impl From<walkdir::Error> for Error {
 impl From<hotwatch::Error> for Error {
     fn from(err: hotwatch::Error) -> Self {
         Error::HotwatchError(err)
+    }
+}
+
+impl From<varlink::Error> for Error {
+    fn from(err: varlink::Error) -> Self {
+        Error::VarlinkError(err)
     }
 }
 

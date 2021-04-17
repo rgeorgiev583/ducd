@@ -3,10 +3,18 @@ name = 'ducd'
 version = '0.1.0'
 authors = ['Radoslav Georgiev <rgeorgiev583@gmail.com>']
 edition = '2018'
+build = 'build.rs'
 
 [dependencies]
 hotwatch = '0.4.3'
 log = '0.4.14'
+serde = "1.0.125"
+serde_derive = "1.0.125"
+serde_json = "1.0.64"
+varlink = "11.0.1"
 walkdir = '2.3.1'
 [target."cfg(not(windows))".dependencies]
 signal-hook = '0.3.8'
+
+[build-dependencies]
+varlink_generator = '10.0.0'

@@ -1,7 +1,10 @@
 mod cache;
+mod com_github_rgeorgiev583_ducd;
 mod du;
 mod error;
+mod varlink;
 
+use crate::varlink::VarlinkServer;
 use cache::Cache;
 use du::space_usage;
 use error::{Error, Result};
@@ -33,6 +36,15 @@ fn main() -> Result<()> {
                     print!("{}", cache);
                 }
             }
+            Ok(())
+        });
+    }
+
+    {
+        let cache = cache.clone();
+        spawn(move || -> Result<()> {
+            let varlink_server = VarlinkServer::new(cache);
+            varlink_server.start()?;
             Ok(())
         });
     }
