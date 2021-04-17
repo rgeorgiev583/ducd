@@ -19,6 +19,12 @@ use std::path::Path;
 #[cfg(not(windows))]
 use std::thread::spawn;
 
+fn log_error<T, E: std::fmt::Display>(result: std::result::Result<T, E>) {
+    if let Err(err) = result {
+        error!("{}", err);
+    }
+}
+
 fn main() -> Result<()> {
     let args = std::env::args();
     if args.len() == 0 {
@@ -49,7 +55,7 @@ fn main() -> Result<()> {
         });
     }
 
-    let mut watcher = Hotwatch::new().expect("path watcher failed to initialize");
+    let mut watcher = Hotwatch::new()?;
     for path in args.skip(1) {
         let cache = cache.clone();
         let result = watcher.watch(Path::new(&path), move |event: Event| {
@@ -57,11 +63,9 @@ fn main() -> Result<()> {
                 Event::NoticeWrite(file_path) => cache.update(&file_path, space_usage(&file_path)?),
                 Event::NoticeRemove(file_path) => cache.remove(&file_path),
                 Event::Rename(old_file_path, new_file_path) => {
-                    let mut result = cache.remove(&old_file_path);
-                    if let Err(err) = cache.update(&new_file_path, space_usage(&new_file_path)?) {
-                        result = Err(err);
-                    }
-                    result
+                    let result = cache.remove(&old_file_path);
+                    log_error(result);
+                    cache.update(&new_file_path, space_usage(&new_file_path)?)
                 }
                 Event::Rescan => {
                     // TODO: implement invalidation only of entries with prefix "path"
@@ -70,14 +74,10 @@ fn main() -> Result<()> {
                 }
                 _ => Ok(()),
             })();
-            if let Err(err) = result {
-                error!("{}", err);
-            }
+            log_error(result);
             Flow::Continue
         });
-        if let Err(err) = result {
-            error!("{}", err);
-        }
+        log_error(result);
     }
     watcher.run();
 
