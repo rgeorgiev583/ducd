@@ -8,7 +8,11 @@ use hotwatch::{
     Event,
 };
 use log::error;
+#[cfg(not(windows))]
+use signal_hook::{consts::signal::SIGUSR1, iterator::Signals};
 use std::path::Path;
+#[cfg(not(windows))]
+use std::thread::spawn;
 
 fn main() -> Result<()> {
     let args = std::env::args();
@@ -17,6 +21,20 @@ fn main() -> Result<()> {
     }
 
     let cache = Cache::new();
+
+    if !cfg!(windows) {
+        let cache = cache.clone();
+        spawn(move || -> Result<()> {
+            let mut signals = Signals::new(&[SIGUSR1])?;
+            for signal in &mut signals {
+                if let SIGUSR1 = signal {
+                    print!("{}", cache);
+                }
+            }
+            Ok(())
+        });
+    }
+
     let mut watcher = Hotwatch::new().expect("path watcher failed to initialize");
     for path in args.skip(1) {
         let cache = cache.clone();
@@ -50,5 +68,6 @@ fn main() -> Result<()> {
         }
     }
     watcher.run();
+
     Ok(())
 }
