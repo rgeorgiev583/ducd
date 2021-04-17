@@ -1,24 +1,9 @@
+use crate::du::space_usage;
 use crate::error::{Error, Result};
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
-use std::fs::metadata;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
-use walkdir::WalkDir;
-
-pub fn get_file_size(path: &Path) -> Result<i64> {
-    let metadata = metadata(path)?;
-    let file_type = metadata.file_type();
-    if file_type.is_dir() {
-        let mut size = 0;
-        for entry in WalkDir::new(path) {
-            size += entry?.metadata()?.len();
-        }
-        Ok(size as i64)
-    } else {
-        Ok(metadata.len() as i64)
-    }
-}
 
 #[derive(Clone, Debug)]
 pub struct Cache {
@@ -36,7 +21,7 @@ impl Cache {
         let mut inner = self.inner.lock().unwrap();
         match (*inner).get_mut(path) {
             Some(size) => Ok(*size),
-            None => Ok(get_file_size(&path)?),
+            None => Ok(space_usage(&path)?),
         }
     }
 
@@ -53,7 +38,7 @@ impl Cache {
             match inner.get_mut(&path) {
                 Some(size) => *size += size_diff,
                 None => {
-                    if let Ok(mut file_size) = get_file_size(&path) {
+                    if let Ok(mut file_size) = space_usage(&path) {
                         file_size += size_diff;
                         inner.insert(path.to_path_buf(), file_size);
                     } else {

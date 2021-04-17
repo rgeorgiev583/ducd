@@ -1,7 +1,9 @@
 mod cache;
+mod du;
 mod error;
 
-use cache::{get_file_size, Cache};
+use cache::Cache;
+use du::space_usage;
 use error::{Error, Result};
 use hotwatch::{
     blocking::{Flow, Hotwatch},
@@ -40,13 +42,11 @@ fn main() -> Result<()> {
         let cache = cache.clone();
         let result = watcher.watch(Path::new(&path), move |event: Event| {
             let result = (|| match event {
-                Event::NoticeWrite(file_path) => {
-                    cache.update(&file_path, get_file_size(&file_path)?)
-                }
+                Event::NoticeWrite(file_path) => cache.update(&file_path, space_usage(&file_path)?),
                 Event::NoticeRemove(file_path) => cache.remove(&file_path),
                 Event::Rename(old_file_path, new_file_path) => {
                     let mut result = cache.remove(&old_file_path);
-                    if let Err(err) = cache.update(&new_file_path, get_file_size(&new_file_path)?) {
+                    if let Err(err) = cache.update(&new_file_path, space_usage(&new_file_path)?) {
                         result = Err(err);
                     }
                     result
