@@ -27,7 +27,7 @@ fn log_error<T, E: std::fmt::Display>(result: std::result::Result<T, E>) {
 
 fn main() -> Result<()> {
     let args = std::env::args();
-    if args.len() == 0 {
+    if args.len() < 2 {
         return Err(Error::DucdError("no paths to watch provided".to_owned()));
     }
 
