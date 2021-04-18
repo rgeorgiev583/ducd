@@ -40,7 +40,7 @@ impl Cache {
                 None => {
                     if let Ok(mut file_size) = space_usage(&path) {
                         file_size += size_diff;
-                        inner.insert(path.to_path_buf(), file_size);
+                        inner.insert(path.to_owned(), file_size);
                     } else {
                         result = Err(Error::DucdError(
                             format!("could not determine size of {}", path.to_string_lossy())
