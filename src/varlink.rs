@@ -44,8 +44,10 @@ impl VarlinkServer {
     }
 
     pub fn start(&self) -> varlink::Result<()> {
-        const VARLINK_ADDRESS: &str = if cfg!(windows) {
+        const VARLINK_ADDRESS: &str = if cfg!(target_os = "windows") {
             "tcp:127.0.0.1:42069"
+        } else if cfg!(target_os = "linux") {
+            "unix:@com.github.rgeorgiev583.ducd"
         } else {
             "unix:/run/com.github.rgeorgiev583.ducd"
         };
