@@ -1,10 +1,11 @@
-use crate::{du::space_usage, error::Result};
-use std::path::{Path, PathBuf};
-use std::sync::{Arc, Mutex};
 use std::{
     collections::HashMap,
     fmt::{Display, Formatter},
+    path::{Path, PathBuf},
+    sync::{Arc, Mutex},
 };
+
+use crate::{du::space_usage, error::Result};
 
 #[derive(Clone, Debug)]
 pub struct Cache {

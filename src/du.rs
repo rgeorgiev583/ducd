@@ -1,7 +1,7 @@
-use crate::error::Result;
-use std::fs::metadata;
-use std::path::Path;
+use std::{fs::metadata, path::Path};
 use walkdir::WalkDir;
+
+use crate::error::Result;
 
 pub fn space_usage(path: &Path) -> Result<i64> {
     let metadata = metadata(path)?;
