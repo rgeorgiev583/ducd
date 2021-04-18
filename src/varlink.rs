@@ -30,6 +30,9 @@ impl VarlinkInterface for VarlinkServer {
         path: String,
     ) -> varlink::Result<()> {
         let path = Path::new(&path);
+        if !self.watcher.is_watched(path) {
+            self.watcher.watch(path)?;
+        }
         let size = self.watcher.cache.get(path)?;
         self.watcher.cache.update(path, size);
         call.reply(size)
@@ -40,7 +43,16 @@ impl VarlinkInterface for VarlinkServer {
         call: &mut dyn Call_StartWatching,
         path: String,
     ) -> varlink::Result<()> {
-        self.watcher.watch(Path::new(&path))?;
+        let path = Path::new(&path);
+        if self.watcher.is_watched(path) {
+            return Err(Error::DucdError(format!(
+                "{} is already being watched",
+                path.to_string_lossy()
+            ))
+            .into());
+        }
+
+        self.watcher.watch(path)?;
         call.reply()
     }
 
@@ -49,7 +61,16 @@ impl VarlinkInterface for VarlinkServer {
         call: &mut dyn Call_StopWatching,
         r#path: String,
     ) -> varlink::Result<()> {
-        self.watcher.unwatch(Path::new(&path))?;
+        let path = Path::new(&path);
+        if !self.watcher.is_watched(path) {
+            return Err(Error::DucdError(format!(
+                "{} is not being watched",
+                path.to_string_lossy()
+            ))
+            .into());
+        }
+
+        self.watcher.unwatch(path)?;
         call.reply()
     }
 
