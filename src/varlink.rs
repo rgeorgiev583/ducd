@@ -28,7 +28,7 @@ impl VarlinkInterface for VarlinkServer {
     ) -> varlink::Result<()> {
         let path = Path::new(&path);
         let size = self.cache.get(path)?;
-        self.cache.update(path, size)?;
+        self.cache.update(path, size);
         call.reply(size)
     }
 

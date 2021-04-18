@@ -1,9 +1,10 @@
-use crate::du::space_usage;
-use crate::error::{Error, Result};
-use std::collections::HashMap;
-use std::fmt::{Display, Formatter};
+use crate::{du::space_usage, error::Result};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
+use std::{
+    collections::HashMap,
+    fmt::{Display, Formatter},
+};
 
 #[derive(Clone, Debug)]
 pub struct Cache {
@@ -25,42 +26,28 @@ impl Cache {
         }
     }
 
-    pub fn update(&self, path: &Path, size: i64) -> Result<()> {
+    pub fn update(&self, path: &Path, size: i64) {
         let mut inner = self.inner.lock().unwrap();
         let size_diff: i64 = match inner.insert(path.to_owned(), size) {
             Some(old_size) => size - old_size,
             None => size,
         };
         let mut path = path.to_owned();
-        let mut result = Ok(());
         loop {
             path.pop();
-            match inner.get_mut(&path) {
-                Some(size) => *size += size_diff,
-                None => {
-                    if let Ok(mut file_size) = space_usage(&path) {
-                        file_size += size_diff;
-                        inner.insert(path.to_owned(), file_size);
-                    } else {
-                        result = Err(Error::DucdError(
-                            format!("could not determine size of {}", path.to_string_lossy())
-                                .to_owned(),
-                        ));
-                    }
-                }
+            if let Some(size) = inner.get_mut(&path) {
+                *size += size_diff;
             }
             if path.parent().is_none() {
                 break;
             }
         }
-        result
     }
 
-    pub fn remove(&self, path: &Path) -> Result<()> {
-        let result = self.update(path, 0);
+    pub fn remove(&self, path: &Path) {
+        self.update(path, 0);
         let mut inner = self.inner.lock().unwrap();
         inner.remove(path);
-        result
     }
 
     pub fn invalidate(&self) {

@@ -59,20 +59,23 @@ fn main() -> Result<()> {
     for path in args.skip(1) {
         let cache = cache.clone();
         let result = watcher.watch(Path::new(&path), move |event: Event| {
-            let result = (|| match event {
-                Event::NoticeWrite(file_path) => cache.update(&file_path, space_usage(&file_path)?),
-                Event::NoticeRemove(file_path) => cache.remove(&file_path),
-                Event::Rename(old_file_path, new_file_path) => {
-                    let result = cache.remove(&old_file_path);
-                    log_error(result);
-                    cache.update(&new_file_path, space_usage(&new_file_path)?)
-                }
-                Event::Rescan => {
-                    // TODO: implement invalidation only of entries with prefix "path"
-                    cache.invalidate();
-                    Ok(())
-                }
-                _ => Ok(()),
+            let result: Result<_> = (|| {
+                match event {
+                    Event::NoticeWrite(file_path) => {
+                        cache.update(&file_path, space_usage(&file_path)?)
+                    }
+                    Event::NoticeRemove(file_path) => cache.remove(&file_path),
+                    Event::Rename(old_file_path, new_file_path) => {
+                        cache.remove(&old_file_path);
+                        cache.update(&new_file_path, space_usage(&new_file_path)?)
+                    }
+                    Event::Rescan => {
+                        // TODO: implement invalidation only of entries with prefix "path"
+                        cache.invalidate()
+                    }
+                    _ => {}
+                };
+                Ok(())
             })();
             log_error(result);
             Flow::Continue
