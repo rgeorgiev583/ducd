@@ -29,7 +29,7 @@ impl Cache {
         let mut inner = self.inner.lock().unwrap();
         let size_diff: i64 = match inner.insert(path.to_owned(), size) {
             Some(old_size) => size - old_size,
-            None => 0,
+            None => size,
         };
         let mut path = path.to_owned();
         let mut result = Ok(());
