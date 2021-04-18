@@ -1,13 +1,16 @@
-use crate::cache::Cache;
-use crate::com_github_rgeorgiev583_ducd::{
-    self, Call_GetSpaceUsage, Call_InvalidateCache, VarlinkInterface,
+use crate::{
+    com_github_rgeorgiev583_ducd::{
+        self, Call_GetSpaceUsage, Call_InvalidateCache, Call_StartWatching, Call_StopWatching,
+        VarlinkInterface,
+    },
+    error::Error,
+    watcher::Watcher,
 };
-use crate::error::Error;
 use std::path::Path;
 
 #[derive(Clone)]
 pub struct VarlinkServer {
-    cache: Cache,
+    watcher: Watcher,
 }
 
 impl From<Error> for varlink::error::Error {
@@ -27,20 +30,38 @@ impl VarlinkInterface for VarlinkServer {
         path: String,
     ) -> varlink::Result<()> {
         let path = Path::new(&path);
-        let size = self.cache.get(path)?;
-        self.cache.update(path, size);
+        let size = self.watcher.cache.get(path)?;
+        self.watcher.cache.update(path, size);
         call.reply(size)
     }
 
+    fn start_watching(
+        &self,
+        call: &mut dyn Call_StartWatching,
+        path: String,
+    ) -> varlink::Result<()> {
+        self.watcher.watch(Path::new(&path))?;
+        call.reply()
+    }
+
+    fn stop_watching(
+        &self,
+        call: &mut dyn Call_StopWatching,
+        r#path: String,
+    ) -> varlink::Result<()> {
+        self.watcher.unwatch(Path::new(&path))?;
+        call.reply()
+    }
+
     fn invalidate_cache(&self, call: &mut dyn Call_InvalidateCache) -> varlink::Result<()> {
-        self.cache.invalidate();
+        self.watcher.cache.invalidate();
         call.reply()
     }
 }
 
 impl VarlinkServer {
-    pub fn new(cache: Cache) -> Self {
-        Self { cache: cache }
+    pub fn new(watcher: Watcher) -> Self {
+        Self { watcher }
     }
 
     pub fn start(&self) -> varlink::Result<()> {
