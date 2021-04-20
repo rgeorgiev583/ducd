@@ -57,6 +57,13 @@ impl CacheMap {
     fn invalidate(&mut self) {
         self.inner.clear();
     }
+
+    fn to_string_map(&self) -> HashMap<String, i64> {
+        self.inner
+            .iter()
+            .map(|(path, size)| (path.to_string_lossy().to_string(), *size))
+            .collect()
+    }
 }
 
 impl Display for CacheMap {
@@ -103,6 +110,11 @@ impl Cache {
     pub fn invalidate(&self) {
         let mut inner = self.inner.lock().unwrap();
         inner.invalidate()
+    }
+
+    pub fn to_string_map(&self) -> HashMap<String, i64> {
+        let inner = self.inner.lock().unwrap();
+        inner.to_string_map()
     }
 }
 

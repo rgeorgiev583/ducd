@@ -3,4 +3,5 @@ interface com.github.rgeorgiev583.ducd
 method GetSpaceUsage(path: string) -> (size: int)
 method StartWatching(path: string) -> ()
 method StopWatching(path: string) -> ()
+method ListCacheEntries() -> (cache: [string]int)
 method InvalidateCache() -> ()

@@ -1,7 +1,7 @@
 use crate::{
     com_github_rgeorgiev583_ducd::{
-        self, Call_GetSpaceUsage, Call_InvalidateCache, Call_StartWatching, Call_StopWatching,
-        VarlinkInterface,
+        self, Call_GetSpaceUsage, Call_InvalidateCache, Call_ListCacheEntries, Call_StartWatching,
+        Call_StopWatching, VarlinkInterface,
     },
     error::Error,
     watcher::Watcher,
@@ -71,6 +71,10 @@ impl VarlinkInterface for VarlinkServer {
 
         self.watcher.unwatch(path)?;
         call.reply()
+    }
+
+    fn list_cache_entries(&self, call: &mut dyn Call_ListCacheEntries) -> varlink::Result<()> {
+        call.reply(self.watcher.cache.to_string_map())
     }
 
     fn invalidate_cache(&self, call: &mut dyn Call_InvalidateCache) -> varlink::Result<()> {
