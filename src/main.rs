@@ -8,23 +8,14 @@ mod watcher;
 
 #[cfg(not(windows))]
 use signal_hook::{consts::signal::SIGUSR1, iterator::Signals};
+use std::env::args;
 use std::path::Path;
 #[cfg(not(windows))]
 use std::thread::spawn;
 
-use crate::{
-    error::{Error, Result},
-    log::log_error,
-    varlink::VarlinkServer,
-    watcher::Watcher,
-};
+use crate::{error::Result, log::log_error, varlink::VarlinkServer, watcher::Watcher};
 
 fn main() -> Result<()> {
-    let args = std::env::args();
-    if args.len() < 2 {
-        return Err(Error::DucdError("no paths to watch provided".to_owned()));
-    }
-
     let watcher = Watcher::new()?;
 
     if !cfg!(windows) {
@@ -40,7 +31,7 @@ fn main() -> Result<()> {
         });
     }
 
-    for path in args.skip(1) {
+    for path in args().skip(1) {
         let result = watcher.watch(Path::new(&path));
         log_error(result);
     }
