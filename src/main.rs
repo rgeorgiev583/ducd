@@ -22,7 +22,7 @@ fn main() -> Result<()> {
         let cache = watcher.cache.clone();
         spawn(move || -> Result<()> {
             let mut signals = Signals::new(&[SIGUSR1])?;
-            for signal in &mut signals {
+            for signal in signals.forever() {
                 if let SIGUSR1 = signal {
                     print!("{}", cache);
                 }
