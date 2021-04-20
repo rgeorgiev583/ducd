@@ -3,9 +3,14 @@ name = 'ducd'
 version = '0.1.0'
 authors = ['Radoslav Georgiev <rgeorgiev583@gmail.com>']
 edition = '2018'
+description = 'Directory Usage Caching Daemon: a program which accepts requests to calculate the size of directories, and caches the results. '
+homepage = 'https://github.com/rgeorgiev583/ducd'
+repository = 'https://github.com/rgeorgiev583/ducd'
+license = 'MIT'
 build = 'build.rs'
 
 [dependencies]
+clap = '2.33.3'
 hotwatch = '0.4.3'
 log = '0.4.14'
 serde = '1.0.125'

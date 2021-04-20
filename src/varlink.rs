@@ -88,7 +88,7 @@ impl VarlinkServer {
         Self { watcher }
     }
 
-    pub fn start(&self) -> varlink::Result<()> {
+    pub fn start(&self, address: Option<&str>) -> varlink::Result<()> {
         const VARLINK_ADDRESS: &str = if cfg!(target_os = "windows") {
             "tcp:127.0.0.1:42069"
         } else if cfg!(target_os = "linux") {
@@ -99,14 +99,17 @@ impl VarlinkServer {
         let ducd_interface = com_github_rgeorgiev583_ducd::new(Box::new(self.clone()));
         let service = varlink::VarlinkService::new(
             "com.github.rgeorgiev583",
-            "ducd",
-            "0.1.0",
-            "https://github.com/rgeorgiev583/ducd",
+            crate_name!(),
+            crate_version!(),
+            env!("CARGO_PKG_HOMEPAGE"),
             vec![Box::new(ducd_interface)],
         );
         varlink::listen(
             service,
-            VARLINK_ADDRESS,
+            match address {
+                Some(address) => address,
+                None => VARLINK_ADDRESS,
+            },
             &varlink::ListenConfig {
                 ..Default::default()
             },
