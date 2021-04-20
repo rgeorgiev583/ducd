@@ -27,7 +27,7 @@ impl VarlinkInterface for VarlinkServer {
     fn get_space_usage(
         &self,
         call: &mut dyn Call_GetSpaceUsage,
-        path: String,
+        r#path: String,
     ) -> varlink::Result<()> {
         let path = Path::new(&path);
         if !self.watcher.is_watched(path) {
@@ -40,7 +40,7 @@ impl VarlinkInterface for VarlinkServer {
     fn start_watching(
         &self,
         call: &mut dyn Call_StartWatching,
-        path: String,
+        r#path: String,
     ) -> varlink::Result<()> {
         let path = Path::new(&path);
         if self.watcher.is_watched(path) {
