@@ -1,4 +1,5 @@
 use hotwatch::{Event, Hotwatch};
+use log::error;
 use std::{
     collections::HashSet,
     path::{Path, PathBuf},
@@ -33,6 +34,9 @@ impl Watcher {
                     }
                     Event::NoticeRemove(file_path) => cache.remove(&file_path),
                     Event::Create(file_path) => cache.set(&file_path, space_usage(&file_path)?),
+                    Event::Write(file_path) => cache.set(&file_path, space_usage(&file_path)?),
+                    Event::Chmod(_) => {}
+                    Event::Remove(file_path) => cache.remove(&file_path),
                     Event::Rename(old_file_path, new_file_path) => {
                         cache.remove(&old_file_path);
                         cache.set(&new_file_path, space_usage(&new_file_path)?)
@@ -41,7 +45,7 @@ impl Watcher {
                         // TODO: implement invalidation only of entries with prefix "path"
                         cache.invalidate()
                     }
-                    _ => {}
+                    Event::Error(err, _) => error!("{}", err),
                 };
                 Ok(())
             })();
