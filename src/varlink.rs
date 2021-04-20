@@ -33,8 +33,7 @@ impl VarlinkInterface for VarlinkServer {
         if !self.watcher.is_watched(path) {
             self.watcher.watch(path)?;
         }
-        let size = self.watcher.cache.get(path)?;
-        self.watcher.cache.update(path, size);
+        let size = self.watcher.cache.update(path)?;
         call.reply(size)
     }
 
