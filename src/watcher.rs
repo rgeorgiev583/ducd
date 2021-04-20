@@ -32,6 +32,7 @@ impl Watcher {
                         cache.set(&file_path, space_usage(&file_path)?)
                     }
                     Event::NoticeRemove(file_path) => cache.remove(&file_path),
+                    Event::Create(file_path) => cache.set(&file_path, space_usage(&file_path)?),
                     Event::Rename(old_file_path, new_file_path) => {
                         cache.remove(&old_file_path);
                         cache.set(&new_file_path, space_usage(&new_file_path)?)
